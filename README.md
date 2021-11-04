@@ -34,4 +34,4 @@ default_namespace = "service"
 ### Datadog Dashboard
 
 * Download the JSON file [Vector - Host Metrics](Vector-HostMetrics--2021-11-04T19_22_56.json)
-* Import into Datadog new dashboard and overwrite it.
+* Import the JSON file into Datadog via the new dashboard process and accept the overwrite changes.
