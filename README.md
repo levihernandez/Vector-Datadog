@@ -45,6 +45,8 @@ default_namespace = "service"
 * Use scripts or commands to extract data from remote hosts
 * Commands must be sent in a specific order as an array
 
+> file: `remote_poll.toml`
+
 ```yaml
 # Source is the collector of data
 [sources.my_source_id]
@@ -64,4 +66,7 @@ encoding.codec = "text"
 # TODO: Transform data, format text, send to Datadog
 ```
 
+> Execute Vector to collect remote host data
+
+`vector --config remote_poll.toml`
 
