@@ -25,7 +25,7 @@ scrape_interval_secs = 15
 [sinks.my_sink_id]
 type = "datadog_metrics"
 inputs = [ "my_source_id" ]
-api_key = "${DD-API-KEY}"
+api_key = "${DATADOG_API_KEY_ENV_VAR}"
 default_namespace = "service"
 ```
 
@@ -63,7 +63,15 @@ inputs = ["my_source_id"]
 type = "console"
 encoding.codec = "text"
 
-# TODO: Transform data, format text, send to Datadog
+# Collect data and send it to Datadog as logs
+[sinks.my_sink_id]
+type = "datadog_logs"
+inputs = [ "my_source_id" ]
+default_api_key = "${DATADOG_API_KEY_ENV_VAR}"
+region = "us"
+compression = "gzip"
+site = "datadoghq.com"
+tags = ["source:vector","env:dev","collector:live process"]
 ```
 
 > Execute Vector to collect remote host data
