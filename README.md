@@ -35,3 +35,33 @@ default_namespace = "service"
 
 * Download the JSON file [Vector - Host Metrics](Vector-HostMetrics--2021-11-04T19_22_56.json)
 * Import the JSON file into Datadog via the new dashboard process and accept the overwrite changes.
+
+## Vector Host Logs
+
+* Collection Syslog data to Vector
+
+## Vector Remote Execution
+
+* Use scripts or commands to extract data from remote hosts
+* Commands must be sent in a specific order as an array
+
+```yaml
+# Source is the collector of data
+[sources.my_source_id]
+type = "exec"
+mode = "scheduled"
+command = ["ssh","-i", ".vagrant/machines/default/virtualbox/private_key", "vagrant@192.168.86.239", "-o", "StrictHostKeyChecking=no", "-q", "iperf3", "-c", "hera", "-Z", "-J", "-T", "Standard"]
+include_stderr = true
+maximum_buffer_size_bytes = 1_000_000
+scheduled.exec_interval_secs = 37
+
+# Sink out prints it to the console
+[sinks.out]
+inputs = ["my_source_id"]
+type = "console"
+encoding.codec = "text"
+
+# TODO: Transform data, format text, send to Datadog
+```
+
+
