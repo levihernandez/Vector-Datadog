@@ -5,6 +5,7 @@ mode = "scheduled"
 ## command = ["ssh","-i", ".vagrant/machines/default/virtualbox/private_key", "vagrant@192.168.86.239",  "bash", "-s", "<", "/home/vagrant/host_metrics.sh"]
 # example 2, execute the free | grep Mem command to get remote memory data
 ## command = ["ssh","-i", ".vagrant/machines/default/virtualbox/private_key", "vagrant@192.168.86.239", "-o", "StrictHostKeyChecking=no", "free | grep Mem" ]
+# example 3, execute the free command to get the exact fields
 command = ["ssh","-i", ".vagrant/machines/default/virtualbox/private_key", "vagrant@192.168.86.239", "-o", "StrictHostKeyChecking=no", "free", "-b", "|", "grep", "Mem", "|", "cut", "-f2,3,4,5,6,7" ]
 include_stderr = true
 maximum_buffer_size_bytes = 1_000_000
