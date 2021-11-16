@@ -1,0 +1,123 @@
+[sources.my_source_id]
+type = "exec"
+mode = "scheduled"
+# example 1, copy a script to the remote server and set in remote location so vector can execute it: /home/vagrant/host_metrics.sh
+## command = ["ssh","-i", ".vagrant/machines/default/virtualbox/private_key", "vagrant@192.168.86.239",  "bash", "-s", "<", "/home/vagrant/host_metrics.sh"]
+# example 2, execute the free | grep Mem command to get remote memory data
+## command = ["ssh","-i", ".vagrant/machines/default/virtualbox/private_key", "vagrant@192.168.86.239", "-o", "StrictHostKeyChecking=no", "free | grep Mem" ]
+command = ["ssh","-i", ".vagrant/machines/default/virtualbox/private_key", "vagrant@192.168.86.239", "-o", "StrictHostKeyChecking=no", "free", "-b", "|", "grep", "Mem", "|", "cut", "-f2,3,4,5,6,7" ]
+include_stderr = true
+maximum_buffer_size_bytes = 1_000_000
+scheduled.exec_interval_secs = 37
+# Data from type = exec is returned as a log, the entire payload is a JSON object
+# The raw output will be within the message field
+
+# Parse the JSON message key
+[transforms.filein_regex_message]
+type = "regex_parser"
+inputs = ["my_source_id"]
+drop_field = true
+field = "message"
+patterns = ['^(?P<collector>.+)        (?P<total>.+)      (?P<used>.+)      (?P<free>.+)         (?P<shared>.+)      (?P<cache>.+)      (?P<available>.+)$']
+
+# Print to console for debugging purposes
+[sinks.out_log]
+inputs = ["filein_regex_message"]
+type = "console"
+encoding.codec = "json"
+
+
+# Transform the parsed regex and turn into metrics
+[transforms.my_transform_id]
+type = "log_to_metric"
+inputs = [ "filein_regex_message" ]
+
+  [[transforms.my_transform_id.metrics]]
+  type = "counter"
+  field = "total"
+  name = "memory_total_bytes"
+  increment_by_value = true
+
+    [transforms.my_transform_id.metrics.tags]
+    host = "{{host}}"
+    env = "dev"
+    namespace = "host"
+
+  [[transforms.my_transform_id.metrics]]
+  type = "counter"
+  field = "used"
+  name = "memory_used_bytes"
+  increment_by_value = true
+
+    [transforms.my_transform_id.metrics.tags]
+    host = "{{host}}"
+    env = "dev"
+    namespace = "host"
+ 
+  [[transforms.my_transform_id.metrics]]
+  type = "counter"
+  field = "free"
+  name = "memory_free_bytes"
+  increment_by_value = true
+
+    [transforms.my_transform_id.metrics.tags]
+    host = "{{host}}"
+    env = "dev"
+    namespace = "host"
+
+  [[transforms.my_transform_id.metrics]]
+  type = "counter"
+  field = "shared"
+  name = "memory_shared_bytes"
+  increment_by_value = true
+
+    [transforms.my_transform_id.metrics.tags]
+    host = "{{host}}"
+    env = "dev"
+    namespace = "host"
+  
+  [[transforms.my_transform_id.metrics]]
+  type = "counter"
+  field = "cache"
+  name = "memory_cache_bytes"
+  increment_by_value = true
+
+    [transforms.my_transform_id.metrics.tags]
+    host = "{{host}}"
+    env = "dev"
+    namespace = "host"
+  
+  [[transforms.my_transform_id.metrics]]
+  type = "counter"
+  field = "available"
+  name = "memory_available_bytes"
+  increment_by_value = true
+
+    [transforms.my_transform_id.metrics.tags]
+    host = "{{host}}"
+    env = "dev"
+    namespace = "host"
+
+
+# Print JSON to console for debugging purposes
+[sinks.out_transform]
+inputs = ["my_transform_id"]
+type = "console"
+encoding.codec = "json"
+
+# Send custom metrics to Datadog
+[sinks.my_sink_custom_metric]
+type = "datadog_metrics"
+inputs = [ "my_transform_id" ]
+api_key = "${DATADOG_API_KEY_ENV_VAR}"
+default_namespace = "host"
+
+# Send logs to Datadog
+[sinks.my_sink_id]
+type = "datadog_logs"
+inputs = [ "filein_regex_message" ]
+default_api_key = "${DATADOG_API_KEY_ENV_VAR}"
+#endpoint = "127.0.0.1:8080"
+region = "us"
+compression = "gzip"
+site = "datadoghq.com"
